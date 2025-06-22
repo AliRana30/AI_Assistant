@@ -16,13 +16,13 @@ router.get('/dashboard', auth, (req, res) => {
 router.route('/login').post(login);
 router.route('/logout').get(logout);
 router.get('/current-user', currentUser);
-
-
-// router.get("/login",auth,login);
-router.post('/assistant',auth,assistant);
-
 router.post('/update',auth,upload.single("assitantImage"),updateAssistant)
 router.route("/signup").post(signup);
-router.route('/signup').get(signup);
+router.post('/assistant',auth,assistant);
+
+router.get('/test', (req, res) => {
+  res.json({ message: '✅ Test route working' });
+});
+
 
 module.exports = router;
