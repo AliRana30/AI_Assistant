@@ -99,7 +99,7 @@ const Signup = () => {
           setUser(response.data.user);
           console.log('Signup successful:', response.data);
           toast.success('Signup successful!');
-          navigate('/login');
+          navigate('/');
         } else {
           toast.error('Signup failed: no user returned');
         }
