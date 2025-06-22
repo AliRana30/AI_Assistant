@@ -32,7 +32,8 @@ export const UserProvider = ({ children }) => {
 
       // Use the same URL pattern as other components
       const baseURL = import.meta.env.VITE_BASE_URL || 'https://backend-production-35a0.up.railway.app';
-      const apiUrl = import.meta.env.DEV ? '/api/assistant' : `${baseURL}/assistant`;
+      const apiUrl = `${baseURL}/assistant`;
+      
 
       console.log('Making gemini request to:', apiUrl);
       console.log('With token:', token.substring(0, 20) + '...');

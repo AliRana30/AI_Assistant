@@ -80,8 +80,14 @@ const Customize2 = () => {
       console.log('Response status:', response.status);
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
-      const data = await response.json();
-      console.log('Update response:', data);
+      let data;
+try {
+  data = await response.json();
+} catch (err) {
+  console.error("❌ Failed to parse JSON:", err);
+  throw new Error('Unexpected server response. Please try again.');
+}
+
 
       if (!response.ok) {
         if (response.status === 401) {
