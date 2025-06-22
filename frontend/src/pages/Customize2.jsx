@@ -1,11 +1,12 @@
-import.meta.env.VITE_BASE_URL
 import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import api from "../api";
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
 
 const Customize2 = () => {
   const [assistantName, setAssistantName] = useState("");
+  const [loading, setLoading] = useState(false);
   const { backendImage, frontendImage, selectedImage, setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -22,38 +23,94 @@ const Customize2 = () => {
     return new File([blob], "assistant.jpg", { type: blob.type });
   };
 
- const handleAssistant = async () => {
-  if (!assistantName || assistantName.length < 3) {
-    alert("Assistant name must be at least 3 characters long.");
-    return;
-  }
+  const handleAssistant = async () => {
+    if (!assistantName || assistantName.length < 3) {
+      toast.error("Assistant name must be at least 3 characters long.");
+      return;
+    }
 
-  try {
-    const formData = new FormData();
-    formData.append("assistantName", assistantName);
-
-    const file = backendImage ? frontendImage : selectedImage;
-    formData.append("assistantImage", file); 
-
+    setLoading(true);
     
-    const response = await api.post(`/update`, formData, {
-      withCredentials: true,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    
-    setUser(response.data);
-    const assistantImage = formData.get("assistantImage")
-    localStorage.setItem("assistantImage",JSON.stringify(assistantImage));
+    try {
+      const formData = new FormData();
+      formData.append("assistantName", assistantName);
 
-    localStorage.setItem("user", JSON.stringify(response.data));
-    navigate("/");
-  } catch (error) {
-    console.error("Error creating assistant:", error.response?.data || error.message);
-  }
-};
+      const file = backendImage ? frontendImage : selectedImage;
+      formData.append("assistantImage", file);
 
+      console.log('Updating assistant with:', { assistantName, hasFile: !!file });
+
+      // Try multiple ways to get the token
+      const tokenFromStorage = localStorage.getItem('token');
+      const tokenFromCookies = Cookies.get('token');
+      const userFromStorage = localStorage.getItem('user');
+      
+      console.log('Debug token info:');
+      console.log('- localStorage token:', tokenFromStorage);
+      console.log('- cookies token:', tokenFromCookies);
+      console.log('- user in storage:', !!userFromStorage);
+      console.log('- all cookies:', document.cookie);
+      console.log('- all localStorage:', Object.keys(localStorage));
+
+      const token = tokenFromStorage || tokenFromCookies;
+
+      if (!token) {
+        toast.error('No authentication token found. Please login again.');
+        navigate('/login');
+        return;
+      }
+
+      // Use the same URL pattern as signup/login
+      const baseURL = import.meta.env.VITE_BASE_URL || 'https://backend-production-35a0.up.railway.app';
+      const apiUrl = import.meta.env.DEV ? '/api/update' : `${baseURL}/update`;
+
+      console.log('Making request to:', apiUrl);
+      console.log('With token:', token.substring(0, 20) + '...');
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type for FormData
+        },
+        credentials: 'include',
+        body: formData
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      const data = await response.json();
+      console.log('Update response:', data);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error('Session expired. Please login again.');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          Cookies.remove('token');
+          navigate('/login');
+          return;
+        }
+        throw new Error(data.message || data.error || 'Update failed');
+      }
+
+      setUser(data);
+      const assistantImage = formData.get("assistantImage");
+      localStorage.setItem("assistantImage", JSON.stringify(assistantImage));
+      localStorage.setItem("user", JSON.stringify(data));
+
+      toast.success('Assistant created successfully!');
+      navigate("/");
+      
+    } catch (error) {
+      console.error("Error creating assistant:", error);
+      const errorMessage = error.message || 'Failed to create assistant. Please try again.';
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-t from-black to-[#030353] px-4">
@@ -91,6 +148,7 @@ const Customize2 = () => {
           value={assistantName}
           onChange={(e) => setAssistantName(e.target.value)}
           className="mb-6 px-4 py-2 rounded bg-gray-800 text-white focus:outline-none w-full text-base sm:text-lg"
+          disabled={loading}
         />
 
         {assistantName.length < 3 && (
@@ -101,10 +159,11 @@ const Customize2 = () => {
 
         {assistantName.length >= 3 && (
           <button
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded mb-2 w-full transition-colors text-base sm:text-lg"
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2 px-6 rounded mb-2 w-full transition-colors text-base sm:text-lg"
             onClick={handleAssistant}
+            disabled={loading}
           >
-            Create your assistant
+            {loading ? 'Creating Assistant...' : 'Create your assistant'}
           </button>
         )}
       </div>

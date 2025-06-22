@@ -2,13 +2,12 @@ import React, { useState, useContext } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
 import Cookies from 'js-cookie';
 import { UserContext } from '../context/UserContext';
-import api from '../api';
 
 const LoginComponent = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -26,30 +25,59 @@ const LoginComponent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    
     try {
-      const response = await api.post(`/login`, {
-        name: formData.firstName,
-        email: formData.email,
-        password: formData.password,
+      console.log('Attempting login with:', { email: formData.email });
+      
+      const baseURL = import.meta.env.VITE_BASE_URL || 'https://backend-production-35a0.up.railway.app';
+      const apiUrl = import.meta.env.DEV ? '/api/login' : `${baseURL}/login`;
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        })
       });
 
-      const { token, user } = response.data;
+      const data = await response.json();
+      console.log('Login response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Login failed');
+      }
+
+      const { token, user } = data;
 
       if (!user) {
         throw new Error("No user data received");
       }
 
+      // Set user in context
       setUser(user);
-      Cookies.set('token', token, { withCredentials: true }, { expires: 7 });
-      localStorage.setItem('token', token);
+      
+      if (token) {
+        Cookies.set('token', token, { expires: 7 });
+        localStorage.setItem('token', token);
+      }
       localStorage.setItem('email', user.email);
       localStorage.setItem('user', JSON.stringify(user));
 
-      toast.success('Login successful');
-      navigate(user ? '/' : '/customize');
+      toast.success('Login successful!');
+      navigate('/');
+      
     } catch (error) {
-      toast.error("Login failed");
       console.error('Login error:', error);
+      
+      const errorMessage = error.message || 'Login failed. Please try again.';
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -128,9 +156,10 @@ const LoginComponent = () => {
           {/* Sign In Button */}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 

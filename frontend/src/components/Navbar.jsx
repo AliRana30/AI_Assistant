@@ -20,7 +20,10 @@ const Navbar = ({ onStopListening }) => {
     }
     
     try {
-      await api.get("/logout", {
+      const baseURL = import.meta.env.VITE_BASE_URL || 'https://backend-production-35a0.up.railway.app';
+      const apiUrl = import.meta.env.DEV ? '/api/login' : `${baseURL}/logout`;
+      
+      await fetch(apiUrl, {
         withCredentials: true,
       });
       Cookies.remove("token");

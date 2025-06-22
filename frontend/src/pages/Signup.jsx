@@ -1,7 +1,5 @@
-import.meta.env.VITE_BASE_URL
 import React, { useState } from 'react';
-import {  Eye, EyeOff } from 'lucide-react';
-
+import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useContext } from 'react';
@@ -11,9 +9,10 @@ import api from '../api';
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    lastName: '', // Added lastName to initial state
+    lastName: '',
     email: '',
     phone: '',
     dateOfBirth: '',
@@ -23,10 +22,8 @@ const Signup = () => {
     agreeToMarketing: false
   });
 
-  const {setUser} = useContext(UserContext);
-
+  const { setUser } = useContext(UserContext);
   const [errors, setErrors] = useState({});
-
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -36,6 +33,7 @@ const Signup = () => {
       [name]: type === 'checkbox' ? checked : value
     });
 
+    // Clear error when user starts typing
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -61,6 +59,14 @@ const Signup = () => {
       newErrors.email = 'Email is invalid';
     }
 
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    }
+
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    }
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
@@ -82,39 +88,78 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    console.log('Form submitted!'); // Debug log
+    
     const newErrors = validateForm();
-  
+    console.log('Validation errors:', newErrors); // Debug log
+
     if (Object.keys(newErrors).length === 0) {
+      setLoading(true);
       try {
-        const response = await api.post(`/signup`, {
+        console.log('VITE_BASE_URL:', import.meta.env.VITE_BASE_URL);
+        console.log('Sending request to:', `${import.meta.env.VITE_BASE_URL}/signup`);
+        console.log('Form data being sent:', {
           name: `${formData.name} ${formData.lastName}`,
           email: formData.email,
           password: formData.password,
           phone: formData.phone,
           dateOfBirth: formData.dateOfBirth,
         });
-  
-        if (response.data?.user) {
-          setUser(response.data.user);
-          console.log('Signup successful:', response.data);
+
+        // Temporary direct URL for testing
+        const baseURL = import.meta.env.VITE_BASE_URL || 'https://backend-production-35a0.up.railway.app';
+        //  proxy endpoint for local development
+        const apiUrl = import.meta.env.DEV ? '/api/signup' : `${baseURL}/signup`;
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            name: `${formData.name} ${formData.lastName}`,
+            email: formData.email,
+            password: formData.password,
+            phone: formData.phone,
+            dateOfBirth: formData.dateOfBirth,
+          })
+        });
+
+        const data = await response.json();
+        console.log('Direct fetch response:', data);
+
+        if (!response.ok) {
+          throw new Error(data.message || data.error || 'Request failed');
+        }
+
+        console.log('Response received:', response.data.user);
+
+        if (data?.user) {
+          setUser(data.user);
           toast.success('Signup successful!');
           navigate('/');
         } else {
+          console.error('No user in response:', data);
           toast.error('Signup failed: no user returned');
         }
       } catch (error) {
-        console.error('Signup error:', error?.response?.data || error.message);
-        toast.error('Signup failed. Please check your console.');
+        console.error('Signup error:', error);
+        console.error('Error response:', error?.response?.data);
+        console.error('Error message:', error.message);
+        
+        const errorMessage = error?.response?.data?.message || 
+                           error?.response?.data?.error || 
+                           error.message || 
+                           'Signup failed. Please try again.';
+        
+        toast.error(errorMessage);
+      } finally {
+        setLoading(false);
       }
     } else {
+      console.log('Setting validation errors:', newErrors);
       setErrors(newErrors);
     }
-  };
-  
-
-  const handleSocialSignup = (provider) => {
-    console.log(`${provider} signup clicked`);
   };
 
   return (
@@ -125,111 +170,154 @@ const Signup = () => {
           <h2 className="text-2xl font-bold text-white">Create Account</h2>
           <p className="text-gray-300">Join us today and get started</p>
         </div>
-  
+
         {/* Signup Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="Full Name"
-            required
-          />
-  
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="Email Address"
-            required
-          />
-  
-          <input
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleInputChange}
-            className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="Phone Number"
-            required
-          />
-  
-          <input
-            type="date"
-            name="dateOfBirth"
-            value={formData.dateOfBirth}
-            onChange={handleInputChange}
-            className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-            required
-          />
-  
-          <div className="relative">
+          {/* First Name */}
+          <div>
             <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              value={formData.password}
+              type="text"
+              name="name"
+              value={formData.name}
               onChange={handleInputChange}
               className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="Password"
-              autoComplete="new-password"
+              placeholder="First Name"
               required
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
+            {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
           </div>
-  
-          <div className="relative">
+
+          {/* Last Name */}
+          <div>
             <input
-              type={showConfirmPassword ? "text" : "password"}
-              name="confirmPassword"
-              value={formData.confirmPassword}
+              type="text"
+              name="lastName"
+              value={formData.lastName}
               onChange={handleInputChange}
               className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="Confirm Password"
-              
+              placeholder="Last Name"
               required
             />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-            >
-              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
+            {errors.lastName && <p className="text-red-400 text-sm mt-1">{errors.lastName}</p>}
           </div>
-  
-          <div className="flex items-center">
+
+          {/* Email */}
+          <div>
             <input
-              type="checkbox"
-              id="agreeToTerms"
-              name="agreeToTerms"
-              checked={formData.agreeToTerms}
+              type="email"
+              name="email"
+              value={formData.email}
               onChange={handleInputChange}
-              className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+              className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Email Address"
               required
             />
-            <label htmlFor="agreeToTerms" className="ml-2 text-gray-300 text-sm">
-              I agree to the terms and conditions
-            </label>
+            {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
           </div>
-  
+
+          {/* Phone */}
+          <div>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Phone Number"
+              required
+            />
+            {errors.phone && <p className="text-red-400 text-sm mt-1">{errors.phone}</p>}
+          </div>
+
+          {/* Date of Birth */}
+          <div>
+            <input
+              type="date"
+              name="dateOfBirth"
+              value={formData.dateOfBirth}
+              onChange={handleInputChange}
+              className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              required
+            />
+            {errors.dateOfBirth && <p className="text-red-400 text-sm mt-1">{errors.dateOfBirth}</p>}
+          </div>
+
+          {/* Password */}
+          <div>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Password"
+                autoComplete="new-password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password}</p>}
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                className="block w-full px-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Confirm Password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {errors.confirmPassword && <p className="text-red-400 text-sm mt-1">{errors.confirmPassword}</p>}
+          </div>
+
+          {/* Terms Agreement */}
+          <div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="agreeToTerms"
+                name="agreeToTerms"
+                checked={formData.agreeToTerms}
+                onChange={handleInputChange}
+                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                required
+              />
+              <label htmlFor="agreeToTerms" className="ml-2 text-gray-300 text-sm">
+                I agree to the terms and conditions
+              </label>
+            </div>
+            {errors.agreeToTerms && <p className="text-red-400 text-sm mt-1">{errors.agreeToTerms}</p>}
+          </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+            disabled={loading}
+            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-semibold py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
-  
+
         {/* Login link */}
         <div className="mt-6 text-center">
           <p className="text-gray-300">
@@ -245,7 +333,6 @@ const Signup = () => {
       </div>
     </div>
   );
-  
 };
 
 export default Signup;
