@@ -1,13 +1,14 @@
 import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import { toast } from 'react-toastify';
-import Cookies from 'js-cookie';
+import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const Customize2 = () => {
   const [assistantName, setAssistantName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { backendImage, frontendImage, selectedImage, setUser } = useContext(UserContext);
+  const { backendImage, frontendImage, selectedImage, setUser } =
+    useContext(UserContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,7 +31,7 @@ const Customize2 = () => {
     }
 
     setLoading(true);
-    
+
     try {
       const formData = new FormData();
       formData.append("assistantName", assistantName);
@@ -38,67 +39,74 @@ const Customize2 = () => {
       const file = backendImage ? frontendImage : selectedImage;
       formData.append("assistantImage", file);
 
-      console.log('Updating assistant with:', { assistantName, hasFile: !!file });
+      console.log("Updating assistant with:", {
+        assistantName,
+        hasFile: !!file,
+      });
 
       // Try multiple ways to get the token
-      const tokenFromStorage = localStorage.getItem('token');
-      const tokenFromCookies = Cookies.get('token');
-      const userFromStorage = localStorage.getItem('user');
-      
-      console.log('Debug token info:');
-      console.log('- localStorage token:', tokenFromStorage);
-      console.log('- cookies token:', tokenFromCookies);
-      console.log('- user in storage:', !!userFromStorage);
-      console.log('- all cookies:', document.cookie);
-      console.log('- all localStorage:', Object.keys(localStorage));
+      const tokenFromStorage = localStorage.getItem("token");
+      const tokenFromCookies = Cookies.get("token");
+      const userFromStorage = localStorage.getItem("user");
+
+      console.log("Debug token info:");
+      console.log("- localStorage token:", tokenFromStorage);
+      console.log("- cookies token:", tokenFromCookies);
+      console.log("- user in storage:", !!userFromStorage);
+      console.log("- all cookies:", document.cookie);
+      console.log("- all localStorage:", Object.keys(localStorage));
 
       const token = tokenFromStorage || tokenFromCookies;
 
       if (!token) {
-        toast.error('No authentication token found. Please login again.');
-        navigate('/login');
+        toast.error("No authentication token found. Please login again.");
+        navigate("/login");
         return;
       }
 
       // Use the same URL pattern as signup/login
-      const baseURL = import.meta.env.VITE_BASE_URL || 'https://backend-production-35a0.up.railway.app';
-      const apiUrl = import.meta.env.DEV ? '/api/update' : `${baseURL}/update`;
+      const baseURL =
+        import.meta.env.VITE_BASE_URL ||
+        "https://backend-production-35a0.up.railway.app";
+      const apiUrl = import.meta.env.DEV ? "/api/update" : `${baseURL}/update`;
 
-      console.log('Making request to:', apiUrl);
-      console.log('With token:', token.substring(0, 20) + '...');
+      console.log("Making request to:", apiUrl);
+      console.log("With token:", token.substring(0, 20) + "...");
 
       const response = await fetch(apiUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           // Don't set Content-Type for FormData
         },
-        credentials: 'include',
-        body: formData
+        credentials: "include",
+        body: formData,
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log("Response status:", response.status);
+      console.log(
+        "Response headers:",
+        Object.fromEntries(response.headers.entries())
+      );
 
       let data;
-try {
-  data = await response.json();
-} catch (err) {
-  console.error("❌ Failed to parse JSON:", err);
-  throw new Error('Unexpected server response. Please try again.');
-}
-
+      try {
+        data = await response.json();
+      } catch (err) {
+        console.error("❌ Failed to parse JSON:", err);
+        throw new Error("Unexpected server response. Please try again.");
+      }
 
       if (!response.ok) {
         if (response.status === 401) {
-          toast.error('Session expired. Please login again.');
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          Cookies.remove('token');
-          navigate('/login');
+          toast.error("Session expired. Please login again.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          Cookies.remove("token");
+          navigate("/login");
           return;
         }
-        throw new Error(data.message || data.error || 'Update failed');
+        throw new Error(data.message || data.error || "Update failed");
       }
 
       setUser(data);
@@ -106,12 +114,12 @@ try {
       localStorage.setItem("assistantImage", JSON.stringify(assistantImage));
       localStorage.setItem("user", JSON.stringify(data));
 
-      toast.success('Assistant created successfully!');
+      toast.success("Assistant created successfully!");
       navigate("/");
-      
     } catch (error) {
       console.error("Error creating assistant:", error);
-      const errorMessage = error.message || 'Failed to create assistant. Please try again.';
+      const errorMessage =
+        error.message || "Failed to create assistant. Please try again.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -169,7 +177,7 @@ try {
             onClick={handleAssistant}
             disabled={loading}
           >
-            {loading ? 'Creating Assistant...' : 'Create your assistant'}
+            {loading ? "Creating Assistant..." : "Create your assistant"}
           </button>
         )}
       </div>
