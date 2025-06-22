@@ -19,6 +19,10 @@ app.use(cors(corsOptions))
 app.use(express.json());
 app.use(cookieParser());
 
+app.use((req, res, next) => {
+  console.log(`🛬 Received ${req.method} on ${req.url}`);
+  next();
+});
 //routes
 app.use('/',routes);
 
