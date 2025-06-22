@@ -62,7 +62,8 @@ const Customize2 = () => {
 
       // Use the same URL pattern as signup/login
       const baseURL = import.meta.env.VITE_BASE_URL || 'https://backend-production-35a0.up.railway.app';
-      const apiUrl = import.meta.env.DEV ? `${baseURL}/update` : '/api/update';
+const apiUrl = `${baseURL}/update`;
+
 
       console.log('Making request to:', apiUrl);
       console.log('With token:', token.substring(0, 20) + '...');
