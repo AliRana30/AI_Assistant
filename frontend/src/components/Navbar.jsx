@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import.meta.env.VITE_BASE_URL
+
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { UserContext } from '../context/UserContext';
-import axios from 'axios';
 import Cookies from 'js-cookie';
+import api from '../api';
 
 const Navbar = ({ onStopListening }) => {
   const { user, setUser } = useContext(UserContext);
@@ -18,7 +20,7 @@ const Navbar = ({ onStopListening }) => {
     }
     
     try {
-      await axios.get("http://localhost:5000/logout", {
+      await api.get("/logout", {
         withCredentials: true,
       });
       Cookies.remove("token");
@@ -56,10 +58,10 @@ const Navbar = ({ onStopListening }) => {
             onClick={handleHome}
           >
             <div className="w-9 h-9 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-sm">AI</span>
+              <span className="text-white font-bold text-sm">PR</span>
             </div>
             <h1 className="text-xl font-semibold text-white">
-              AI Assistant Hub
+            Promptly
             </h1>
           </div>
           

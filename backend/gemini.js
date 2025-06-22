@@ -54,7 +54,7 @@ Your task is to understand the user's natural language input and respond with a 
 - "unit_convert": user asks to convert units (e.g., kg to pounds, Celsius to Fahrenheit).
 
 🛑 Important:
-- Use  ${userName}" if someone asks "tumhe kisne banaya" (who made you).
+- Use "Ali Mahmood" if someone asks "tumhe kisne banaya" (who made you).
 - Only respond with the **JSON object**, nothing else.
 
 Now your userInput – ${command}

@@ -1,7 +1,8 @@
-import axios from "axios";
+import.meta.env.VITE_BASE_URL
 import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
+import api from "../api";
 
 const Customize2 = () => {
   const [assistantName, setAssistantName] = useState("");
@@ -35,7 +36,7 @@ const Customize2 = () => {
     formData.append("assistantImage", file); 
 
     
-    const response = await axios.post("http://localhost:5000/update", formData, {
+    const response = await api.post(`/update`, formData, {
       withCredentials: true,
       headers: {
         "Content-Type": "multipart/form-data",
