@@ -24,7 +24,6 @@ app.get('/', (req, res) => {
 
 
 app.use((req, res, next) => {
-  console.log(`🛬 Received ${req.method} on ${req.url}`);
   next();
 });
 
@@ -38,5 +37,4 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   db();
-  console.log(`✅ Server running at http://localhost:${PORT}`);
 });

@@ -16,17 +16,14 @@ const assistant = async (req, res) => {
     const { command } = req.body;
     
     const response = await gemini(command, assistantName, userName);
-    console.log('Gemini Response:', response); 
 
     if (!response) {
       return res.status(500).json({ message: "Gemini API failed" });
     }
 
-    // Improved regex pattern to match JSON objects
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     
     if (!jsonMatch) {
-      console.log('Invalid JSON response:', response); 
       return res.status(400).json({ 
         message: "Invalid response from the assistant",
         details: "Response did not contain valid JSON"
@@ -36,10 +33,7 @@ const assistant = async (req, res) => {
     let geminiResult;
     try {
       geminiResult = JSON.parse(jsonMatch[0]);
-      console.log('Parsed result:', geminiResult);
     } catch (err) {
-      console.error("Parse Error:", err.message);
-      console.log('Failed to parse:', jsonMatch[0]);
       return res.status(400).json({ 
         message: "JSON parsing failed",
         details: err.message 
@@ -107,7 +101,6 @@ const assistant = async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Error details:', error);
     return res.status(500).json({ 
       message: "Internal Server Error",
       details: error.message

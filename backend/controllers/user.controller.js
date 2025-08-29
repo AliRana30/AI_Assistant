@@ -1,12 +1,10 @@
 const User = require('../Schemas/Users');
-const cloudinaryConfig = require('../utils/cloudinary'); // Assuming you have a utility for handling file uploads
-const generateToken = require('../utils/token'); // Assuming you have a utility for generating JWT tokens
+const cloudinaryConfig = require('../utils/cloudinary');
+const generateToken = require('../utils/token'); 
 
 
 const updateAssistant = async (req, res) => {
-  try {
-    console.log("Request Body:", req.body);
-    console.log("Uploaded File:", req.file);
+  try {   
 
     const { assistantName } = req.body;
     const userId = req.user.id;
@@ -22,7 +20,6 @@ const updateAssistant = async (req, res) => {
       assistantImage = await cloudinaryConfig(req.file.path); 
     }
 
-    console.log("Updating user with:", assistantName, assistantImage);
 
     // Update user document
     const updatedUser = await User.findByIdAndUpdate(
@@ -49,7 +46,6 @@ const updateAssistant = async (req, res) => {
 
     res.status(200).json(updatedUser);
   } catch (err) {
-    console.error("Update error:", err);
     res.status(500).json({ error: "Server Error" });
   }
 };

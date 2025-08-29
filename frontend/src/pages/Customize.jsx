@@ -28,7 +28,6 @@ const Customize = () => {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      console.log("Image preview (base64):", reader.result);
     };
     reader.readAsDataURL(file);
   };

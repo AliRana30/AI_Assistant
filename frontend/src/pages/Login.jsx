@@ -28,7 +28,6 @@ const LoginComponent = () => {
     setLoading(true);
     
     try {
-      console.log('Attempting login with:', { email: formData.email });
       
       const baseURL = import.meta.env.VITE_BASE_URL || 'https://ai-assistant-3-mmwh.onrender.com';
       const apiUrl = import.meta.env.DEV ? '/api/login' : `${baseURL}/login`;
@@ -46,7 +45,6 @@ const LoginComponent = () => {
       });
 
       const data = await response.json();
-      console.log('Login response:', data);
 
       if (!response.ok) {
         throw new Error(data.message || data.error || 'Login failed');
@@ -72,7 +70,6 @@ const LoginComponent = () => {
       navigate('/');
       
     } catch (error) {
-      console.error('Login error:', error);
       
       const errorMessage = error.message || 'Login failed. Please try again.';
       toast.error(errorMessage);

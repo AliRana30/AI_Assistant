@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import.meta.env.VITE_BASE_URL
-
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { UserContext } from '../context/UserContext';
 import Cookies from 'js-cookie';
-import api from '../api';
 
 const Navbar = ({ onStopListening }) => {
   const { user, setUser } = useContext(UserContext);
@@ -14,7 +12,6 @@ const Navbar = ({ onStopListening }) => {
 
   // Logout function
   const logout = async () => {
-    // Stop listening before logout if callback provided
     if (onStopListening) {
       onStopListening();
     }
@@ -31,22 +28,21 @@ const Navbar = ({ onStopListening }) => {
       setUser(null);
       navigate("/login");
     } catch (error) {
-      console.error("Logout failed:", error);
     }
   };
 
   const handleCustomize = () => {
-    setIsMenuOpen(false); // 🔥 CLOSE MENU
+    setIsMenuOpen(false); 
     navigate("/customize");
   };
   
   const handleHome = () => {
-    setIsMenuOpen(false); // 🔥 CLOSE MENU
+    setIsMenuOpen(false);
     navigate("/");
   };
   
   const handleHistory = () => {
-    setIsMenuOpen(false); // 🔥 CLOSE MENU
+    setIsMenuOpen(false); 
     navigate("/history");
   };
   

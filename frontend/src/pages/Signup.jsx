@@ -88,17 +88,13 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted!'); // Debug log
     
     const newErrors = validateForm();
-    console.log('Validation errors:', newErrors); // Debug log
 
     if (Object.keys(newErrors).length === 0) {
       setLoading(true);
       try {
-        console.log('VITE_BASE_URL:', import.meta.env.VITE_BASE_URL);
-        console.log('Sending request to:', `${import.meta.env.VITE_BASE_URL}/signup`);
-        console.log('Form data being sent:', {
+         ({
           name: `${formData.name} ${formData.lastName}`,
           email: formData.email,
           password: formData.password,
@@ -106,9 +102,7 @@ const Signup = () => {
           dateOfBirth: formData.dateOfBirth,
         });
 
-        // Temporary direct URL for testing
         const baseURL = import.meta.env.VITE_BASE_URL || 'https://ai-assistant-3-mmwh.onrender.com';
-        //  proxy endpoint for local development
         const apiUrl = import.meta.env.DEV ? '/api/signup' : `${baseURL}/signup`;
         const response = await fetch(apiUrl, {
           method: 'POST',
@@ -126,26 +120,20 @@ const Signup = () => {
         });
 
         const data = await response.json();
-        console.log('Direct fetch response:', data);
 
         if (!response.ok) {
           throw new Error(data.message || data.error || 'Request failed');
         }
 
-        console.log('Response received:', response.data.user);
 
         if (data?.user) {
           setUser(data.user);
           toast.success('Signup successful!');
           navigate('/');
         } else {
-          console.error('No user in response:', data);
           toast.error('Signup failed: no user returned');
         }
       } catch (error) {
-        console.error('Signup error:', error);
-        console.error('Error response:', error?.response?.data);
-        console.error('Error message:', error.message);
         
         const errorMessage = error?.response?.data?.message || 
                            error?.response?.data?.error || 
@@ -157,7 +145,6 @@ const Signup = () => {
         setLoading(false);
       }
     } else {
-      console.log('Setting validation errors:', newErrors);
       setErrors(newErrors);
     }
   };

@@ -312,8 +312,6 @@ const Home = () => {
             recognitionRef.current.start();
           }
         } catch (error) {
-          console.error("Error restarting recognition:", error);
-          // Try again after a longer delay
           setTimeout(() => {
             if (isListening && !isManualStopRef.current) {
               restartRecognition();
@@ -340,9 +338,7 @@ const Home = () => {
     try {
       recognitionRef.current.start();
     } catch (error) {
-      console.error("Error starting recognition:", error);
       setConnectionStatus("error");
-      // Try again after a short delay
       setTimeout(() => {
         if (isListening) {
           restartRecognition();
@@ -366,7 +362,6 @@ const Home = () => {
       try {
         recognitionRef.current.stop();
       } catch (error) {
-        console.error("Error stopping recognition:", error);
       }
     }
   };

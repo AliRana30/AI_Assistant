@@ -13,30 +13,19 @@ export const UserProvider = ({ children }) => {
   // Get gemini response using consistent fetch approach
   const geminiResponse = async (command) => {
     try {
-      console.log('Sending command to gemini:', command);
-      
-      // Try multiple ways to get the token
       const tokenFromStorage = localStorage.getItem('token');
       const tokenFromCookies = Cookies.get('token');
       
-      console.log('Debug gemini token info:');
-      console.log('- localStorage token:', tokenFromStorage);
-      console.log('- cookies token:', tokenFromCookies);
 
       const token = tokenFromStorage || tokenFromCookies;
 
       if (!token) {
-        console.error('No authentication token found for gemini request');
         return { response: "Error: Please login to use the assistant" };
       }
 
-      // Use the same URL pattern as other components
       const baseURL = import.meta.env.VITE_BASE_URL || 'https://ai-assistant-3-mmwh.onrender.com';
       const apiUrl = `${baseURL}/assistant`;
       
-
-      console.log('Making gemini request to:', apiUrl);
-      console.log('With token:', token.substring(0, 20) + '...');
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -48,7 +37,6 @@ export const UserProvider = ({ children }) => {
         body: JSON.stringify({ command })
       });
 
-      console.log('Gemini response status:', response.status);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -63,13 +51,11 @@ export const UserProvider = ({ children }) => {
       }
 
       const data = await response.json();
-      console.log('Gemini response data:', data);
 
       return data;
       
     } catch (err) {
       const msg = err.message || 'Failed to get response from assistant';
-      console.error("Failed to get gemini:", msg);
       return { response: "Error: " + msg };
     }
   };

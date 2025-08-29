@@ -27,16 +27,9 @@ const Signup = async (req, res) => {
             password: hashedPassword
         });
 
-        console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
-        console.log('User object for token:', {
-            _id: user._id,
-            name: user.name,
-            email: user.email
-        });
 
         // Generate auth token
         const authToken = await token(user);
-        console.log('Generated token:', authToken ? 'Token generated successfully' : 'Token is undefined');
 
         // Set cookie
         res.cookie('token', authToken, {
@@ -58,8 +51,6 @@ const Signup = async (req, res) => {
 
         
     } catch (error) {
-        console.error('Error during signup:', error);
-        
         res.status(500).json({ error: "Internal server error" });
     }
 };
