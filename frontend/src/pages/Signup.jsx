@@ -107,7 +107,7 @@ const Signup = () => {
         });
 
         // Temporary direct URL for testing
-        const baseURL = import.meta.env.VITE_BASE_URL || 'https://backend-production-35a0.up.railway.app';
+        const baseURL = import.meta.env.VITE_BASE_URL || 'https://ai-assistant-3-mmwh.onrender.com';
         //  proxy endpoint for local development
         const apiUrl = import.meta.env.DEV ? '/api/signup' : `${baseURL}/signup`;
         const response = await fetch(apiUrl, {

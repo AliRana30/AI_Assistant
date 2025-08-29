@@ -30,7 +30,7 @@ const LoginComponent = () => {
     try {
       console.log('Attempting login with:', { email: formData.email });
       
-      const baseURL = import.meta.env.VITE_BASE_URL || 'https://backend-production-35a0.up.railway.app';
+      const baseURL = import.meta.env.VITE_BASE_URL || 'https://ai-assistant-3-mmwh.onrender.com';
       const apiUrl = import.meta.env.DEV ? '/api/login' : `${baseURL}/login`;
       
       const response = await fetch(apiUrl, {
