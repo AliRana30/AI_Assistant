@@ -44,7 +44,6 @@ const Customize2 = () => {
         hasFile: !!file,
       });
 
-      // Try multiple ways to get the token
       const tokenFromStorage = localStorage.getItem("token");
       const tokenFromCookies = Cookies.get("token");
       const userFromStorage = localStorage.getItem("user");
@@ -64,10 +63,9 @@ const Customize2 = () => {
         return;
       }
 
-      // Use the same URL pattern as signup/login
       const baseURL =
         import.meta.env.VITE_BASE_URL ||
-        "https://backend-production-35a0.up.railway.app";
+        "https://ai-assistant-3-mmwh.onrender.com";
       const apiUrl = import.meta.env.DEV ? "/api/update" : `${baseURL}/update`;
 
       console.log("Making request to:", apiUrl);
